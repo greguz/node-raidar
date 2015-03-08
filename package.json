@@ -1,0 +1,15 @@
+{
+  "name": "raidar",
+  "version": "0.1.0",
+  "description": "NetGear RAIDar node.js implementation",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js",
+    "dump": "node dumper.js $1"
+  },
+  "author": "Gregoletto Giacomo",
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^3.4.0"
+  }
+}
