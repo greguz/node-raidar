@@ -11,5 +11,9 @@
   "license": "MIT",
   "dependencies": {
     "lodash": "^3.4.0"
+  },
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/greguz/node-raidar.git"
   }
 }
