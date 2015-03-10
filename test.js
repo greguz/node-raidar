@@ -1,6 +1,6 @@
 var raidar = require('./index');
 
-console.log('Testing for 10 seconds...');
+console.log('Setting up callbacks...');
 
 raidar.on('error', function(err) {
   console.log('ERROR', err);
@@ -10,9 +10,16 @@ raidar.on('device', function(device) {
   console.log('Response from ' + device.ip + ' - ' + device.hostname + ' (' + device.mac + ')');
 });
 
-raidar.sendMagic();
+console.log('Opening UDP socket...');
 
-setTimeout(function() {
-  console.log('END');
-  process.exit();
-}, 10000);
+raidar.open(function() {
+
+  console.log('Testing for 10 seconds...');
+
+  raidar.request();
+
+  setTimeout(function() {
+    process.exit();
+  }, 10000);
+
+});

@@ -16,7 +16,7 @@ var ReadyNAS = function(buffer) {
 
   this.info     = {};
 
-  this.initInfo();
+  this.init();
 
   return this;
 };
@@ -27,7 +27,7 @@ var ReadyNAS = function(buffer) {
 // private
 // #########################################################################
 
-ReadyNAS.prototype.initInfo = function() {
+ReadyNAS.prototype.init = function() {
   this.initHeaderInfo();
   this.initBodyInfo();
   this.initFooterInfo();
@@ -96,6 +96,15 @@ ReadyNAS.prototype.parseInfo = function(str) {
 // #########################################################################
 // public
 // #########################################################################
+
+ReadyNAS.prototype.disk = function(index) {
+  if (!this.info['disk']) return;
+
+  if (typeof index === 'number')
+    return this.info['disk'][index];
+  else
+    return this.info['disk'];
+};
 
 ReadyNAS.prototype.toJSON = function(string) {
   var res = {

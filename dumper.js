@@ -1,14 +1,14 @@
-var socket  = require('./libs/socket')
+var raidar  = require('./index')
   , path    = require('path')
   , fs      = require('fs');
 
 var folder = path.join(process.argv[2] || __dirname, 'dump');
 
-socket.on('error', function(err) {
+raidar.on('error', function(err) {
   console.log('ERROR', err);
 });
 
-socket.on('message', function(msg) {
+raidar.on('message', function(msg) {
   var id    = new Date().getTime()
     , file  = path.join(folder, id + '.readynas');
 
@@ -23,10 +23,10 @@ socket.on('message', function(msg) {
 console.log('Creating folder ' + folder + '...');
 
 fs.mkdir(folder, function(err) {
-  if (err)
-    console.log('ERROR', err);
-  else
-    socket.sendMagic();
+  if (!err) return raidar.request();
+
+  console.log('ERROR', err);
+  process.exit();
 });
 
 setTimeout(function() {
