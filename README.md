@@ -87,4 +87,6 @@ This event fires with `callback(msg, err)` where `msg` is the response buffer an
 
 ...
 
-# License: MIT
+# License
+
+MIT

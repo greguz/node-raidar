@@ -1,19 +1,30 @@
 {
   "name": "raidar",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "NetGear RAIDar node.js implementation",
   "main": "index.js",
   "scripts": {
     "test": "node test.js",
     "dump": "node dumper.js $1"
   },
-  "author": "Gregoletto Giacomo",
+  "author": {
+    "name" : "Giacomo Gregoletto"
+  },
   "license": "MIT",
   "dependencies": {
     "lodash": "^3.4.0"
   },
-  "repository" : {
-    "type" : "git",
-    "url" : "https://github.com/greguz/node-raidar.git"
-  }
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/greguz/node-raidar.git"
+  },
+  "bugs": {
+    "url": "https://github.com/greguz/node-raidar/issues"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "netgear",
+    "raidar",
+    "socket"
+  ]
 }
