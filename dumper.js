@@ -29,6 +29,8 @@ fs.mkdir(folder, function(err) {
   process.exit();
 });
 
+console.log('Sleep for 10 seconds...');
+
 setTimeout(function() {
   console.log('END');
   process.exit();

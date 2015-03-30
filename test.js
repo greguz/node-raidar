@@ -1,25 +1,15 @@
 var raidar = require('./index');
 
-console.log('Setting up callbacks...');
+console.log('Sleep for 10 seconds...');
 
-raidar.on('error', function(err) {
-  console.log('ERROR', err);
-});
+raidar.request(10000, function(err, devices) {
+  if (err) {
+    console.log(err);
+  } else if (!devices.length) {
+    console.log('No ReadyNAS devices found...');
+  } else {
+    console.log('Founded ' + devices.length + ' devices!');
+  }
 
-raidar.on('device', function(device) {
-  console.log('Response from ' + device.ip + ' - ' + device.hostname + ' (' + device.mac + ')');
-});
-
-console.log('Opening UDP socket...');
-
-raidar.open(function() {
-
-  console.log('Testing for 10 seconds...');
-
-  raidar.request();
-
-  setTimeout(function() {
-    process.exit();
-  }, 10000);
-
+  process.exit();
 });

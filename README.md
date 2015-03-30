@@ -110,6 +110,20 @@ Return Device Hostname.
 
 Return device MAC address.
 
+## Dumping all ReadyNAS messages
+
+```
+node node_modules/raidar/dumper optional/target/folder
+```
+
+Default target folder is under node_modules `raidar` folder.
+
+## Running test
+
+```
+node node_modules/raidar/dumper
+```
+
 ## License
 
 MIT
