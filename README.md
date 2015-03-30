@@ -1,8 +1,14 @@
-# node-raidar: a node.js NetGear RADIar library
+# node-raidar: a node.js NetGear RAIDar library
 
 `node-raidar` is a simple to use NetGear RAIDar implementation for node.js.
 
-# Example
+## Installing
+
+```
+npm install --save raidar
+```
+
+## Get device list
 
 ``` js
 var raidar = require('raidar');
@@ -16,38 +22,51 @@ raidar.request(10000, function(err, devices) {
 });
 ```
 
-# Methods
+## Event definition
 
 ``` js
-var raidar = require('raidar')
+var raidar = require('raidar');
+
+// set event for particular device
+raidar.on('192.168.1.160', function(device) {
+    console.log('Response from:', device.ip, device.mac, device.hostname);
+});
+
+raidar.request();
 ```
 
-## raidar.open(opt:Object, cb:Function)
+## Methods
 
-Open new UDP socket with given `opt` options and fire `cb` callback when socket is open.
-All arguments are optional.
+``` js
+var raidar = require('raidar');
+```
+
+### raidar.open(opt:Object, cb:Function)
+
+Open or reset the UDP socket with given `opt` options and fire `cb` callback when socket is open. All arguments are optional.
+
 Default options:
 - `socketType` : socket type to use ('udp4' or 'udp6'), default `udp4`
 - `portToListen` : port to listen, default `57877`
 - `targetHost` : target host to send "request info" packet, default `255.255.255.255`
 - `targetPort` : target port to send "request info" packet, default `22081`
 
-## raidar.close()
+### raidar.close()
 
 Close UDP socket.
 
-## raidar.request(timeout:Number, callback:Function)
+### raidar.request(timeout:Number, callback:Function)
 
 Send "request info" broadcast packet.
 If at least `callback` function is passed, it will execute after `timeout` ms, default 5000 ms.
 The event fires with `callback(err, devices)`.
 `err` is set in case of errors and `devices` is an array of all devices found.
 
-## raidar.on(event:String, callback:Function)
+### raidar.on(event:String, callback:Function)
 
 Set an event callback.
 
-## raidar.once(event:String, callback:Function)
+### raidar.once(event:String, callback:Function)
 
 Set an event callback that execute only one time.
 
@@ -75,18 +94,22 @@ This event fires with `callback(err)` where `err` is an instance of `Error` clas
 Fail to parse response data.
 This event fires with `callback(msg, err)` where `msg` is the response buffer and `err` is an instance of `Error` class.
 
-# ReadyNAS class
+## ReadyNAS class
 
-...
+It is the representation of a ReadyNAS device.
 
-## Property
+### device.ip()
 
-...
+Return device IP address.
 
-## Methods
+### device.hostname()
 
-...
+Return Device Hostname.
 
-# License
+### device.mac()
+
+Return device MAC address.
+
+## License
 
 MIT

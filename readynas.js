@@ -5,19 +5,19 @@
 var ReadyNAS = function(buffer) {
   if (!buffer instanceof Buffer) throw new Error('RAIDar buffer message required!');
 
-  this.buffer   = buffer;
-  this.message  = buffer.toString('utf8');
+  this._buffer    = buffer;
+  this._message   = buffer.toString('utf8');
 
-  this.header   = null;
+  this._header    = null;
 
-  this.mac      = null;
-  this.hostname = null;
-  this.ip       = null;
+  this._mac       = null;
+  this._hostname  = null;
+  this._ip        = null;
 
-  this.info     = {};
+  this._data      = {};
+  this._info      = {};
 
-  this.init();
-
+  this._init();
   return this;
 };
 
@@ -27,52 +27,57 @@ var ReadyNAS = function(buffer) {
 // private
 // #########################################################################
 
-ReadyNAS.prototype.init = function() {
-  this.initHeaderInfo();
-  this.initBodyInfo();
-  this.initFooterInfo();
+ReadyNAS.prototype._init = function() {
+  this._initHeaderData();
+  this._initBodyData();
+  this._initFooterData();
 };
 
-ReadyNAS.prototype.initHeaderInfo = function() {
-  this.header = this.message.substr(0, 28);
+ReadyNAS.prototype._initHeaderData = function() {
+  this._header = this._message.substr(0, 28);
 
   var self      = this
-    , firstLine = this.message.substring(28, this.message.indexOf('\n'))
+    , firstLine = this._message.substring(28, this._message.indexOf('\n'))
     , firstInfo = firstLine.split('\t')
     , otherInfo = firstInfo.slice(3);
 
-  this.mac      = firstInfo[0];
-  this.hostname = firstInfo[1];
-  this.ip       = firstInfo[2];
+  this._mac       = firstInfo[0];
+  this._hostname  = firstInfo[1];
+  this._ip        = firstInfo[2];
 
-  otherInfo.forEach(function(info) {
-    self.parseInfo(info);
+  otherInfo.forEach(function(ini) {
+    var info = self._parseInfo(ini);
+    if (!self._data[info.name]) self._data[info.name] = [];
+    self._data[info.name].push(info);
   });
 };
 
-ReadyNAS.prototype.initBodyInfo = function() {
+ReadyNAS.prototype._initBodyData = function() {
   var self  = this
-    , lines = this.message.split('\n').slice(1);
+    , lines = this._message.split('\n').slice(1);
 
   lines.forEach(function(line) {
     if (line[0] === '\t') return;
-    self.parseInfo(line);
+
+    var info = self._parseInfo(line);
+    if (!self._data[info.name]) self._data[info.name] = [];
+    self._data[info.name].push(info);
   });
 };
 
-ReadyNAS.prototype.initFooterInfo = function() {
+ReadyNAS.prototype._initFooterData = function() {
+  var lines = this._message.split('\n')
+    , line  = lines[ lines.length - 2 ];
 
-  // TODO write footer data initialization
-
+  this._info = this._parseInfo(line.split('\t').join(''));
 };
 
-ReadyNAS.prototype.parseInfo = function(str) {
-  var arr     = str.split('!!')
-    , name    = arr[0]
-    , info    = { _info : arr[1] };
+ReadyNAS.prototype._parseInfo = function(str) {
+  var arr = str.trim().split('!!')
+    , res = { name: arr[0], _status : arr[1] };
 
-  if (!this.info[name]) this.info[name] = [];
-  if (!arr[2]) return this.info[name].push(info);
+  if (!arr[2])
+    return res;
 
   var otherInfo = arr[2].split('::');
 
@@ -82,13 +87,13 @@ ReadyNAS.prototype.parseInfo = function(str) {
       , value = arr[1];
 
     if (value) {
-      info[field] = value;
+      res[field] = value;
     } else {
-      info['_status'] = field;
+      res['_status'] = field;
     }
   });
 
-  return this.info[name].push(info);
+  return res;
 };
 
 
@@ -97,25 +102,16 @@ ReadyNAS.prototype.parseInfo = function(str) {
 // public
 // #########################################################################
 
-ReadyNAS.prototype.disk = function(index) {
-  if (!this.info['disk']) return;
-
-  if (typeof index === 'number')
-    return this.info['disk'][index];
-  else
-    return this.info['disk'];
+ReadyNAS.prototype.ip = function() {
+  return this._ip;
 };
 
-ReadyNAS.prototype.toJSON = function(string) {
-  var res = {
-    message   : this.message,
-    mac       : this.mac,
-    hostname  : this.hostname,
-    ip        : this.ip,
-    info      : this.info
-  };
+ReadyNAS.prototype.hostname = function() {
+  return this._hostname;
+};
 
-  return string === true ? JSON.stringify(res) : res;
+ReadyNAS.prototype.mac = function() {
+  return this._mac;
 };
 
 
