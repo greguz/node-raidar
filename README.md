@@ -125,7 +125,7 @@ Return device IP address.
 
 ### device.hostname()
 
-Return Device Hostname.
+Return device Hostname.
 
 ### device.mac()
 
