@@ -8,18 +8,48 @@
 npm install --save raidar
 ```
 
-## Get device list
+## Example
+
+### Code
 
 ``` js
 var raidar = require('raidar');
 
-// send request, wait 10000 ms, and return founded devices
-raidar.request(10000, function(err, devices) {
-    if (err)
-        console.log('ERROR', err);
-    else
-        console.log('Founded devices: ' + devices.length);
+console.log('Waiting...');
+
+raidar.request('192.168.1.160', function(err, device) {
+  if (device) {
+    console.log('info', device.info());
+    console.log('volume', device.status('volume'));
+    console.log('disk 0', device.status('disk', 0));
+  } else {
+    console.log(err || 'No device found');
+  }
+
+  process.exit();
 });
+```
+
+### Output
+
+```
+Waiting...
+
+info version=4.1.14,time=1412273301
+
+volume {
+    name: 'volume',
+    _status: '1',
+    status: 'warn',
+    descr: 'Volume C: RAID Level 1, Not redundant.  A disk failure will render this volume dead.; 750 GB (81%) of 921 GB used'
+}
+
+disk 0 {
+    name: 'disk',
+    _status: '1',
+    status: 'dead',
+    descr: 'Channel 1: Seagate ST31000528AS 931 GB, 0C/32F[Dead]'
+}
 ```
 
 ## Event definition
@@ -29,7 +59,7 @@ var raidar = require('raidar');
 
 // set event for particular device
 raidar.on('192.168.1.160', function(device) {
-    console.log('Response from:', device.ip, device.mac, device.hostname);
+    console.log('Response from:', device.mac(), device.hostname());
 });
 
 raidar.request();
@@ -41,26 +71,17 @@ raidar.request();
 var raidar = require('raidar');
 ```
 
-### raidar.open(opt:Object, cb:Function)
+### raidar.open(cb:Function)
 
-Open or reset the UDP socket with given `opt` options and fire `cb` callback when socket is open. All arguments are optional.
-
-Default options:
-- `socketType` : socket type to use ('udp4' or 'udp6'), default `udp4`
-- `portToListen` : port to listen, default `57877`
-- `targetHost` : target host to send "request info" packet, default `255.255.255.255`
-- `targetPort` : target port to send "request info" packet, default `22081`
+Open or reset the UDP socket and fire `cb` callback when socket is open. All arguments are optional.
 
 ### raidar.close()
 
 Close UDP socket.
 
-### raidar.request(timeout:Number, callback:Function)
+### raidar.request(host:String, timeout:Number, callback:Function)
 
-Send "request info" broadcast packet.
-If at least `callback` function is passed, it will execute after `timeout` ms, default 5000 ms.
-The event fires with `callback(err, devices)`.
-`err` is set in case of errors and `devices` is an array of all devices found.
+Send "request status" packet.
 
 ### raidar.on(event:String, callback:Function)
 
@@ -110,18 +131,24 @@ Return Device Hostname.
 
 Return device MAC address.
 
-## Dumping all ReadyNAS messages
+### device.info()
 
-```
-node node_modules/raidar/dumper optional/target/folder
-```
+Return machine info. (may vary by ReadyNAS device)
 
-Default target folder is under node_modules `raidar` folder.
+### device.status(part:String, index:Number)
+
+Return the status of a specific part.
+The `part` list vary by ReadyNAS device used,
+the most common parts are `fan`, `ups`, `volume`, `disk` and `model`.
+
+`index` is used when a part is an Array,
+for example `device.status('disk', 1)` return the second hdd (if present),
+otherwise `device.status('disk')` return a Collection (if exists more than one disk).
 
 ## Running test
 
 ```
-node node_modules/raidar/dumper
+npm test
 ```
 
 ## License

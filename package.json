@@ -1,18 +1,13 @@
 {
   "name": "raidar",
-  "version": "0.2.1",
+  "version": "0.5.0",
   "description": "NetGear RAIDar node.js implementation",
-  "main": "index.js",
+  "main": "./lib/raidar.js",
   "scripts": {
-    "test": "node test.js",
-    "dump": "node dumper.js $1"
+    "test": "grunt test"
   },
   "author": {
-    "name" : "Giacomo Gregoletto"
-  },
-  "license": "MIT",
-  "dependencies": {
-    "lodash": "^3.4.0"
+    "name": "Giacomo Gregoletto"
   },
   "repository": {
     "type": "git",
@@ -21,10 +16,19 @@
   "bugs": {
     "url": "https://github.com/greguz/node-raidar/issues"
   },
-  "devDependencies": {},
+  "dependencies": {
+    "lodash": "^3.4.0"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-jshint": "^0.11.2",
+    "grunt-mocha-test": "^0.12.7",
+    "mocha": "^2.2.4"
+  },
   "keywords": [
     "netgear",
     "raidar",
     "readynas"
-  ]
+  ],
+  "license": "MIT"
 }
