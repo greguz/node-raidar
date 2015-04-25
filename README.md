@@ -158,6 +158,7 @@ $ raidar -t 5 -p
 ### Command line output example
 
 ```
+Multimedia
 version=4.1.14,time=1412273301
 ip:     192.168.1.160
 mac:    0:0d:a2:02:2e:1d
