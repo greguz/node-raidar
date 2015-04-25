@@ -8,9 +8,7 @@
 npm install --save raidar
 ```
 
-## Example
-
-### Code
+### Code example
 
 ``` js
 var raidar = require('raidar');
@@ -30,7 +28,7 @@ raidar.request('192.168.1.160', function(err, device) {
 });
 ```
 
-### Output
+### Output example
 
 ```
 Waiting...
@@ -144,6 +142,51 @@ the most common parts are `fan`, `ups`, `volume`, `disk` and `model`.
 `index` is used when a part is an Array,
 for example `device.status('disk', 1)` return the second hdd (if present),
 otherwise `device.status('disk')` return a Collection (if exists more than one disk).
+
+## Installing globally
+
+```
+npm install -g raidar
+```
+
+### Command line example
+
+```
+$ raidar -t 5 -p
+```
+
+### Command line output example
+
+```
+version=4.1.14,time=1412273301
+ip:     192.168.1.160
+mac:    0:0d:a2:02:2e:1d
+fan
+status  ok
+descr   1704RPM
+ups
+status  not_present
+descr   Not present
+volume
+status  warn
+descr   Volume C: RAID Level 1, Not redundant.  A disk failure will render this volume dead.; 750 GB (81%) of 921 GB used
+disk
+status  dead
+descr   Channel 1: Seagate ST31000528AS 931 GB, 0C/32F[Dead]
+disk
+status  ok
+descr   Channel 2: Seagate ST31000528AS 931 GB, 36C/96F
+model
+mode    home
+descr   ReadyNAS Duo
+arch    nsp
+```
+
+## CLI arguments
+
+- `-t` or `--timeout`
+- `-p` or `--part`
+- `-i` or `--index`
 
 ## Running test
 
