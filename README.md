@@ -152,7 +152,7 @@ npm install -g raidar
 ### Command line example
 
 ```
-$ raidar -t 5 -p
+$ raidar -p
 ```
 
 ### Command line output example
@@ -185,9 +185,19 @@ arch    nsp
 
 ## CLI arguments
 
-- `-t` or `--timeout`
-- `-p` or `--part`
-- `-i` or `--index`
+### timeout
+
+Use `-t` or `--timeout` to set timeout in seconds for ReadyNAS device to respond, default 10 seconds.
+
+### part
+
+Use `-p` or `--part` to show part info and `-i` or `--index` to particular one.
+
+### dump
+
+Use `-d` or `--dump` to dump original response from ReadyNAS device, accept a path as argument.
+
+ex: `$ raidar -d /home/user/dump`
 
 ## Running test
 
