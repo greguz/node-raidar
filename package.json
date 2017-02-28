@@ -2,12 +2,13 @@
   "name": "raidar",
   "version": "0.6.2",
   "description": "NetGear RAIDar node.js implementation",
-  "main": "./lib/raidar.js",
+  "main": "./libs/raidar.js",
   "scripts": {
-    "test": "grunt test"
+    "test": "./node_modules/.bin/eslint \"libs/**\" \"test/**\" && ./node_modules/.bin/mocha"
   },
   "author": {
-    "name": "Giacomo Gregoletto"
+    "name": "Giacomo Gregoletto",
+    "email": "gregolettogiacomo@gmail.com"
   },
   "repository": {
     "type": "git",
@@ -21,6 +22,10 @@
     "minimist": "^1.1.1"
   },
   "devDependencies": {
+    "eslint": "^3.16.1",
+    "eslint-config-standard": "^6.2.1",
+    "eslint-plugin-promise": "^3.4.2",
+    "eslint-plugin-standard": "^2.0.1",
     "mocha": "^3.2.0"
   },
   "bin": {
