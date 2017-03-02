@@ -16,13 +16,13 @@ var chalk = require('chalk')
  */
 
 program
+  .command('raidar')
   .version(manifest.version)
-  .usage('[options]')
   .option('-a, --address <address>', 'perform a request to a particular hostname/IP')
   .option('-t, --timeout <n>', 'set a request idle timeout, default 3 seconds', parseInt)
   .option('-f, --fahrenheit', 'display temperature in fahrenheit instead of celsius')
   .option('-d, --dump [path]', 'dump ReadyNAS messages')
-  .option('-j, --json', 'print JSON format instead')
+  .option('-j, --json', 'print JSON format')
   // .option('-v, --verbose', 'enable debug output')
   .parse(process.argv)
 
