@@ -1,6 +1,6 @@
 {
   "name": "raidar",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "NetGear RAIDar Node.js implementation",
   "main": "./index.js",
   "scripts": {
@@ -32,7 +32,7 @@
     "mocha": "^3.2.0"
   },
   "bin": {
-    "raidar": "./lib/cli.js"
+    "raidar": "./libs/cli.js"
   },
   "keywords": [
     "netgear",
