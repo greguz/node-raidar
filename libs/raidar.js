@@ -1,150 +1,287 @@
-// dependencies
+/**
+ * dependencies
+ */
 
-var util      = require('util'),
-    dgram     = require('dgram'),
-    events    = require('events'),
-    ReadyNAS  = require('./readynas');
+var util = require('util')
+var dgram = require('dgram')
+var EventEmitter = require('events').EventEmitter
+var ReadyNAS = require('./readynas')
 
+/**
+ * @class Raidar
+ * @extends EventEmitter
+ * @constructor
+ */
 
+function Raidar () {
 
-// class definition
+  // force function context
+  this._onSocketClose = this._onSocketClose.bind(this)
+  this._onSocketError = this._onSocketError.bind(this)
+  this._onSocketMessage = this._onSocketMessage.bind(this)
 
-var Raidar = function() {
-  this._options = {
-    socketType    : 'udp4',
-    portToListen  : 57877,
-    targetPort    : 22081,
-    magicPacket   : new Buffer('0000073e0000000100000000f8d496c3ffffffff0000001c00000000', 'hex')
-  };
-};
+  // magic packet to broadcast
+  this._packet = new Buffer('0000073e0000000100000000f8d496c3ffffffff0000001c00000000', 'hex')
 
+  // create TCP socket
+  this.socket = dgram.createSocket('udp4')
 
+}
 
-// inherits from node EventEmitter
+/**
+ * inherit from node.js EventEmitter class
+ */
 
-util.inherits(Raidar, events.EventEmitter);
+util.inherits(Raidar, EventEmitter)
 
+/**
+ * TODO docs
+ *
+ * @return {Boolean}
+ */
 
+Raidar.prototype.isOpen = function () {
 
-// add link to readynas constructor
+  // return the insternal flag
+  return !!this._open
 
-Raidar.prototype.ReadyNAS = ReadyNAS;
+}
 
+/**
+ * open new socket to listen readynas events
+ *
+ * @param {Function} [callback]
+ * @return {Raidar}
+ */
 
+Raidar.prototype.open = function (callback) {
 
-// open new socket to listen readynas events
+  // ensure callback
+  callback = callback || function () { }
 
-Raidar.prototype.open = function(cb) {
-  this.close();
+  // this instance shortcut
+  var self = this
 
-  this._socket = dgram.createSocket(this._options.socketType);
+  // socket var shortcut
+  var socket = this.socket
 
-  this._socket.on('message', this._socketMessage.bind(this));
-  this._socket.on('error', this._socketError.bind(this));
+  // start listening
+  socket.on('error', this._onSocketError)
+  socket.on('message', this._onSocketMessage)
 
-  this._socket.bind(this._options.portToListen, function() {
-    this.setBroadcast(true);
-    if (typeof cb === 'function') cb();
-  });
-};
+  // open socket
+  socket.bind(57877, function () {
 
+    // set communication to broadcast
+    socket.setBroadcast(true)
 
+    // set "open" flag
+    self._open = true
 
-// private socket received message callback
+    // monito "close" event
+    socket.once('close', self._onSocketClose)
 
-Raidar.prototype._socketMessage = function(msg) {
-  this.emit('message', msg);
+    // emit listening event
+    self.emit('listening')
 
+    // execute callback
+    callback()
+
+  })
+
+  // return this instance
+  return this
+
+}
+
+/**
+ * close socket
+ *
+ * @param {Function} [callback]
+ * @return {Raidar}
+ */
+
+Raidar.prototype.close = function (callback) {
+
+  // ensure status
+  if (!this.isOpen()) throw new Error('Socket is not open')
+
+  // ensure callback
+  callback = callback || function () { }
+
+  // stop listening
+  this.socket.off('error', this._onSocketError)
+  this.socket.off('message', this._onSocketMessage)
+
+  // close socket
+  this.socket.close(callback)
+
+  // return this instance
+  return this
+
+}
+
+/**
+ * triggered on socket close
+ * @private
+ */
+
+Raidar.prototype._onSocketClose = function () {
+
+  // update close flag
+  this._open = false
+
+  // emit event
+  this.emit('close')
+
+}
+
+/**
+ * triggered on socket error
+ * @private
+ *
+ * @param {Error} err
+ */
+
+Raidar.prototype._onSocketError = function (err) {
+
+  // notify error
+  this.emit('error', err)
+
+}
+
+/**
+ * triggered on remote response
+ * @private
+ *
+ * @param {Buffer} msg
+ */
+
+Raidar.prototype._onSocketMessage = function (msg) {
+
+  // notify Raidar message
+  this.emit('message', msg)
+
+  // try to parse
   try {
-    var device  = new ReadyNAS(msg),
-        self    = this;
-    [ 'device', device.ip(), device.hostname(), device.mac() ].forEach(function(e) {
-      self.emit(e, device);
-    });
-  } catch(e) {
-    this.emit('fail', msg, e);
-  }
-};
 
+    // instance a ReadyNAS
+    var device = new ReadyNAS(msg)
 
+    // notify device
+    this.emit('device', device)
+    this.emit(device.ip(), device)
+    this.emit(device.mac(), device)
+    this.emit(device.hostname(), device)
 
-// private socket error callback
+  } catch (err) {
 
-Raidar.prototype._socketError = function(err) {
-  this.emit('error', err);
-};
+    // handle paring error
+    this.emit('fail', err, msg)
 
-
-
-// close socket
-
-Raidar.prototype.close = function() {
-  if (this._socket) {
-    this._socket.close();
-  }
-};
-
-
-
-// private function to send "magic" packet
-// to request status to all
-// readynas devices
-
-Raidar.prototype.request = function() {
-  var self      = this,
-      args      = [],
-      opt       = this._options,
-      timeout   = 10000,
-      host      = '255.255.255.255',
-      callback  = function() { },
-      devices   = [];
-
-  for (var i in arguments){
-    args.push(arguments[i]);
   }
 
-  if (!this._socket) return this.open(function() {
-    self.request.apply(self, args);
-  });
+}
 
-  args.forEach(function(arg) {
-    switch(typeof arg) {
-      case 'number':
-        timeout = arg; break;
-      case 'string':
-        host = arg; break;
-      case 'function':
-        callback = arg; break;
+/**
+ * request status to ReadyNAS devices
+ *
+ * @param {Object} [options]
+ * @param {String} [options.host]       request target devices, default '255.255.255.255'
+ * @param {Number} [options.timeout]    request timeout, default 10 seconds
+ * @param {Function} [callback]
+ * @return {Raidar}
+ */
+
+Raidar.prototype.request = function (options, callback) {
+
+  // ensure no previous requests
+  if (this._request) throw new Error('A previous request is running')
+
+  // ensure socket opened
+  if (!this.isOpen()) return this.open(this.request.bind(this, options, callback))
+
+  // flag as running
+  this._request = true
+
+  // handle signature
+  if (typeof options === 'function') {
+
+    callback = options
+
+    options = {}
+
+  }
+
+  // ensure options
+  options = options || {}
+
+  // ensure callback
+  callback = callback || function () { }
+
+  // founded devices
+  var devices = []
+
+  // davice collector handler
+  var handler = function (device) {
+
+    // just push device instance
+    devices.push(device)
+
+  }
+
+  // this instance shortcut
+  var self = this
+
+  // request timeout (default 10 seconds)
+  var timeout = options.timeout || 10000
+
+  // target host (default broadcast)
+  var host = options.host || '255.255.255.255'
+
+  // send magic packet
+  this.socket.send(this._packet, 0, this._packet.length, 22081, host, function (err) {
+
+    // handle error
+    if (err) {
+
+      // clean request flag
+      self._request = false
+
+      // notify error
+      self.emit('error', err)
+
+      // execute callback
+      return callback(err)
+
     }
-  });
 
-  var cbDevice = function(device) {
-    devices.push(device);
-  };
+    // listen for founded devices
+    self.on('device', handler)
 
-  this._socket.send(
-    opt.magicPacket,
-    0,
-    opt.magicPacket.length,
-    opt.targetPort,
-    host,
-    function(err) {
-      if (err) {
-        self.emit('error', err);
-        callback(err);
-      } else {
-        self.on('device', cbDevice);
-        setTimeout(function() {
-          self.removeListener('device', cbDevice);
-          callback(null, host === '255.255.255.255' ? devices : devices[0]);
-        }, timeout);
-      }
-    }
-  );
-};
+    // start a timeout
+    setTimeout(function () {
 
+      // clear devices listener
+      self.removeListener('device', handler)
 
+      // clean request flag
+      self._request = false
 
-// exports class instance
+      // all done
+      callback(null, devices)
 
-module.exports = new Raidar();
+    }, timeout)
+
+  })
+
+  // return this instance
+  return this
+
+}
+
+/**
+ * @exports Raidar
+ */
+
+module.exports = Raidar
