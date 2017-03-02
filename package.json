@@ -4,7 +4,7 @@
   "description": "NetGear RAIDar node.js implementation",
   "main": "./index.js",
   "scripts": {
-    "test": "./node_modules/.bin/eslint \"libs/**\" \"test/**\" && ./node_modules/.bin/mocha"
+    "test": "./node_modules/.bin/eslint \"libs/*.js\" \"test/*.js\" && ./node_modules/.bin/mocha"
   },
   "author": {
     "name": "Giacomo Gregoletto",
@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "bytes": "^2.4.0",
+    "chai": "^3.5.0",
     "chalk": "^1.0.0",
     "commander": "^2.9.0"
   },
