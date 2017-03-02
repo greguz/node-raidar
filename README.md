@@ -81,37 +81,35 @@ raidar.request()
 
 Representation of a ReadyNAS device.
 
-### APIs
+### Device info APIs
 
-#### Device info
-
-##### mac() : {String}
+#### mac() : {String}
 
 Get device MAC address.
 
-##### hostname() : {String}
+#### hostname() : {String}
 
 Get device hostname.
 
-##### ip() : {String}
+#### ip() : {String}
 
 Get device IP.
 
-##### serial() : {String}
+#### serial() : {String}
 
 Get device serial number.
 
-##### version() : {String}
+#### version() : {String}
 
 Get loaded firmware version.
 
-#### Disks info
+### Disks info APIs
 
-##### diskCount() : {Number}
+#### diskCount() : {Number}
 
 Get number of loaded disks.
 
-##### diskInfo({Number} index, {String} [attribute='status']) : {String|Number}
+#### diskInfo({Number} index, {String} [attribute='status']) : {String|Number}
 
 Get info of a particular disk.
 
@@ -123,13 +121,13 @@ Get info of a particular disk.
 | celsius     | {Number}    | temperature in celsius    |
 | fahrenheit  | {Number}    | temperature in fahrenheit |
 
-#### Volumes info
+### Volumes info APIs
 
-##### volumeCount() : {Number}
+#### volumeCount() : {Number}
 
 Get number of configured volumes.
 
-##### volumeInfo({Number} index, {String} [attribute='status']) : {String|Number}
+#### volumeInfo({Number} index, {String} [attribute='status']) : {String|Number}
 
 Get info of a particular volume.
 
@@ -142,21 +140,21 @@ Get info of a particular volume.
 | used      | {Number}    | Used space in bytes       |
 | free      | {Number}    | Free space in bytes       |
 
-#### Other info
+### Other APIs
 
-##### getEntities() : {Array}
+#### getEntities() : {Array}
 
 Get all device entities.
 
-##### getEntity({String} entity, {Number} [index]) : {Object}
+#### getEntity({String} entity, {Number} [index]) : {Object}
 
 Get entity data.
 
-##### getEntityAttribute({String} entity, {Number} [index], {String} attribute) : {*}
+#### getEntityAttribute({String} entity, {Number} [index], {String} attribute) : {*}
 
 Get single entity attribute.
 
-##### toJSON() : {Object}
+#### toJSON() : {Object}
 
 Get {Object} representation of ReadyNAS device.
 
@@ -168,19 +166,19 @@ Handle network data collection.
 
 ### APIs
 
-##### raidar.isOpen() : {Boolean}
+#### raidar.isOpen() : {Boolean}
 
 Check if the UDP socket is open.
 
-##### raidar.open({Function} [callback])
+#### raidar.open({Function} [callback])
 
 Open a new UPD socket, *callback* has no arguments.
 
-##### raidar.close({Function} [callback])
+#### raidar.close({Function} [callback])
 
 Close the UDP socket, *callback* has no arguments.
 
-##### raidar.request({Object} [options], {Function} [callback])
+#### raidar.request({Object} [options], {Function} [callback])
 
 Perform a new ReadyNAS request, if the socket is closed it will be opened.
 
@@ -193,39 +191,39 @@ Perform a new ReadyNAS request, if the socket is closed it will be opened.
 
 ### Events
 
-##### raidar.on('listening', function () { ... })
+#### raidar.on('listening', function () { ... })
 
 Triggered whenever a socket begins listening for datagram messages.
 
-##### raidar.on('close', function () { ... })
+#### raidar.on('close', function () { ... })
 
 Triggered after a socket is closed with *#close()* API.
 
-##### raidar.on('error', function ({Error} err) { ... })
+#### raidar.on('error', function ({Error} err) { ... })
 
 Triggered where an error occurs.
 
-##### raidar.on('fail', function ({Error} err, {Buffer} message) { ... })
+#### raidar.on('fail', function ({Error} err, {Buffer} message) { ... })
 
 Triggered after a error on ReadyNAS instance.
 
-##### raidar.on('message', function ({Buffer} message) { ... })
+#### raidar.on('message', function ({Buffer} message) { ... })
 
 Clean reponse from a ReadyNAS device.
 
-##### raidar.on('device', function (device) { ... })
+#### raidar.on('device', function (device) { ... })
 
 Triggered when a ReadyNAS device is found, with a instance of ReadyNAS class.
 
-##### raidar.on('[IP]', function (device) { ... })
+#### raidar.on('[IP]', function (device) { ... })
 
 Same as *device* event, but triggered when a specific device is found.
 
-##### raidar.on('[hostname]', function (device) { ... })
+#### raidar.on('[hostname]', function (device) { ... })
 
 Same as *device* event, but triggered when a specific device is found.
 
-##### raidar.on('[MAC address]', function (device) { ... })
+#### raidar.on('[MAC address]', function (device) { ... })
 
 Same as *device* event, but triggered when a specific device is found.
 
