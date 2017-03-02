@@ -1,98 +1,218 @@
 #! /usr/bin/env node
 
+/**
+ * dependencies
+ */
 
-// dependencies
+var manifest = require('../package.json')
+var program = require('commander')
+var raidar = require('..')
+var path = require('path')
+var fs = require('fs')
+var chalk = require('chalk')
 
-var path      = require('path'),
-    fs        = require('fs'),
-    chalk     = require('chalk'),
-    minimist  = require('minimist'),
-    raidar    = require('./raidar');
+/**
+ * commande config
+ */
 
+program
+  .version(manifest.version)
+  .usage('[options]')
+  .option('-a, --address <address>', 'perform a request to a particular hostname/IP')
+  .option('-t, --timeout <n>', 'set a request idle timeout, default 3 seconds', parseInt)
+  .option('-f, --fahrenheit', 'display temperature in fahrenheit instead of celsius')
+  .option('-d, --dump [path]', 'dump ReadyNAS messages')
+  .option('-j, --json', 'print JSON format instead')
+  // .option('-v, --verbose', 'enable debug output')
+  .parse(process.argv)
 
-// print with tabs utility
+/**
+ * error handler util
+ *
+ * @param {Error} [err]
+ */
 
-var print = function() {
-  var args = [];
-  for (var i in arguments) {
-    args.push(arguments[i]);
+function handleError (err) {
+
+  // print to stderr
+  if (err) console.error(err.toString())
+
+}
+
+/**
+ * dump feature
+ *
+ * @param {String|Buffer} message
+ * @param {String} [filename]
+ */
+
+function dump (message, filename) {
+
+  // ensure process dump actived
+  if (!program.dump) return
+
+  // set default filename
+  filename = filename || (new Date()).getTime().toString()
+
+  // get CLI argument
+  var dir = program.dump
+
+  // set default target dir
+  if (dir === true) dir = process.cwd()
+
+  // handle relative paths
+  if (dir[0] !== '/') dir = path.join(process.cwd(), dir)
+
+  // get target file path
+  var file = path.join(dir, filename) + '.readynas'
+
+  // write file
+  fs.writeFile(file, message, handleError)
+
+}
+
+/**
+ * get colored icon to print by status code
+ *
+ * @param {String} status
+ * @return {String}
+ */
+
+function statusIcon (status) {
+
+  switch (status) {
+
+    case 'ok':
+      return chalk.green('✓')
+
+    case 'warn':
+      return chalk.bold.yellow('!')
+
+    case 'dead':
+      return chalk.bold.red('x')
+
+    default:
+      return chalk.bold.blue('?')
+
   }
-  console.log(args.join('\t'));
-};
 
+}
 
-// exit from process
+/**
+ * set listeners
+ */
 
-var exit = function(err) {
-  if (err) console.log(chalk.red(err));
-  print();
-  raidar.close();
-  process.exit(err ? 1 : 0);
-};
+// generic errors
+raidar.on('error', handleError)
 
+// parse failed devices
+raidar.on('fail', function (err, message) {
 
-// status print utility
+  // log error
+  handleError(err)
 
-var printStatus = function(status) {
-  print(chalk.yellow(status.name));
+  // execute dump
+  dump(message)
 
-  for (var field in status) {
-    if (field[0] === '_' || field === 'name') continue;
-    print(field, status[field]);
-  }
-};
+})
 
+// successful devices
+raidar.on('device', function (nas) {
 
-// vars
+  // dump message with IP as filename
+  dump(nas.message, nas.ip())
 
-var argv    = minimist(process.argv.slice(2)),
-    timeout = (argv.timeout || argv.t || 10) * 1000,
-    part    = argv.part || argv.p,
-    index   = argv.index || argv.i,
-    dump    = argv.dump || argv.d;
+  // handle JSON output
+  if (program.json) return console.log(JSON.stringify(nas, null, 2))
 
-dump = dump === true ? '.' : dump;
+  var str = '\n'
 
+  str += nas.getEntityAttribute('model', 'descr') + ' - ' + nas.serial() + '\n'
+  str += chalk.yellow('  mac\t') + chalk.grey(nas.mac()) + '\n'
+  str += chalk.yellow('  ip\t') + chalk.grey(nas.ip()) + '\n'
+  str += chalk.yellow('  name\t') + chalk.grey(nas.hostname()) + '\n'
+  str += chalk.yellow('  fw\t') + chalk.grey(nas.version()) + '\n'
 
-// start request
+  str += '  Disks\n'
 
-raidar.request(timeout, exit);
+  for (var d = 1; d <= nas.diskCount(); d++) {
 
+    str += '  ' + statusIcon(nas.diskInfo(d, 'status'))
 
-// on error end
+    str += chalk.grey(' ' + nas.diskInfo(d, 'model') + ' - ')
 
-raidar.on('error', exit);
+    var temp = nas.diskInfo(d, 'celsius')
 
+    var label = temp + '°C'
 
-// print info
+    if (program.fahrenheit) label = nas.diskInfo(d, 'fahrenheit') + '°F'
 
-raidar.on('device', function(device) {
-  print();
-  print(chalk.bold.yellow(device.hostname()));
-  print(device.info());
-  print('ip:', device.ip());
-  print('mac:', device.mac());
+    if (temp < 25) {
 
-  var status = device.status(part, index);
+      str += chalk.bgBlue(label)
 
-  if (status instanceof Array) {
-    status.forEach(printStatus);
-  } else if (status) {
-    printStatus(status);
-  }
+    } else if (temp < 41) {
 
-  if (part === true) {
-    for (var name in device._data) {
-      device._data[name].forEach(printStatus);
+      str += chalk.grey(label)
+
+    } else if (temp < 51) {
+
+      str += chalk.bgYellow(label)
+
+    } else {
+
+      str += chalk.bgRed(label)
+
     }
+
+    str += '\n'
+
   }
 
-  if (dump) {
-    var file    = device.ip() + '.readynas',
-        target  = path.join(dump, file);
+  str += '  Volumes\n'
 
-    fs.writeFile(target, device._message, function(err) {
-      if (err) console.log(chalk.red(err));
-    });
+  for (var v = 1; v <= nas.volumeCount(); v++) {
+
+    str += '  ' + statusIcon(nas.volumeInfo(v, 'status'))
+    str += chalk.grey(' RAID lv.' + nas.volumeInfo(v, 'level') + ' - ')
+
+    var usage = parseInt(nas.volumeInfo(v, 'used') / nas.volumeInfo(v, 'size') * 100)
+
+    if (usage < 50) {
+
+      str += chalk.grey(usage + '%')
+
+    } else if (usage < 75) {
+
+      str += chalk.bgBlue(usage + '%')
+
+    } else if (usage < 90) {
+
+      str += chalk.bgYellow(usage + '%')
+
+    } else {
+
+      str += chalk.bgRed(usage + '%')
+
+    }
+
+    str += chalk.grey(' used\n')
+    str += '    ' + chalk.grey(nas.volumeInfo(v, 'message')) + '\n'
+
   }
-});
+
+  // print to stdout
+  console.log(str)
+
+})
+
+/**
+ * execute request
+ */
+
+console.log('waiting for response..')
+
+raidar.request({
+  address: program.address,
+  timeout: program.timeout
+}, process.exit)
