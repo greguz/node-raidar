@@ -3,6 +3,7 @@
  */
 
 var bytes = require('bytes')
+var deprecate = require('deprecate')
 
 /**
  * each all regex matches
@@ -380,6 +381,34 @@ ReadyNAS.prototype.volumeCount = function () {
 
   // return number of volume entities
   return this.message.match(/volume!!\d+!!/g).length
+
+}
+
+/**
+ * DEPRECATED
+ */
+
+ReadyNAS.prototype.info = function () {
+
+  // print deprecation warning
+  deprecate('ReadyNAS#info() is deprecated')
+
+  // WTF ?
+  return this.getEntityAttribute('model', 'descr')
+
+}
+
+/**
+ * DEPRECATED
+ */
+
+ReadyNAS.prototype.status = function (entity, index) {
+
+  // print deprecation warning
+  deprecate('ReadyNAS#status() is deprecated, use ReadyNAS#getEntity() instead')
+
+  // alias of #getEntity()
+  return this.getEntity(entity, index)
 
 }
 
