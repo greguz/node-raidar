@@ -178,10 +178,48 @@ Raidar.prototype._onSocketMessage = function (msg) {
 }
 
 /**
+ * handle every kind of crazy/random/old signature
+ */
+
+function parseRequestArguments () {
+
+  var result = {}
+
+  for (var i = 0; i < arguments.length; i++) {
+
+    var arg = arguments[i]
+
+    switch (typeof arg) {
+
+      case 'object':
+        result = arg
+        break
+
+      case 'number':
+        result.timeout = arg
+        break
+
+      case 'function':
+        result.callback = arg
+        break
+
+      case 'string':
+        result.address = arg
+        break
+
+    }
+
+  }
+
+  return result
+
+}
+
+/**
  * request status to ReadyNAS devices
  *
  * @param {Object} [options]
- * @param {String} [options.host]       request target devices, default '255.255.255.255'
+ * @param {String} [options.address]    request target, default '255.255.255.255'
  * @param {Number} [options.timeout]    request idle timeout, default 3 seconds
  * @param {Function} [callback]
  * @return {Raidar}
@@ -198,20 +236,11 @@ Raidar.prototype.request = function (options, callback) {
   // flag as running
   this._request = true
 
-  // handle signature
-  if (typeof options === 'function') {
+  // parse random signature
+  options = parseRequestArguments.apply(null, arguments)
 
-    callback = options
-
-    options = {}
-
-  }
-
-  // ensure options
-  options = options || {}
-
-  // ensure callback
-  callback = callback || function () { }
+  // get callback
+  callback = options.callback || function () { }
 
   // this instance shortcut
   var self = this
@@ -255,11 +284,11 @@ Raidar.prototype.request = function (options, callback) {
 
   }
 
-  // target host (default broadcast)
-  var host = options.host || '255.255.255.255'
+  // target address (default broadcast)
+  var address = options.address || '255.255.255.255'
 
   // send magic packet
-  this._socket.send(this._packet, 0, this._packet.length, 22081, host, function (err) {
+  this._socket.send(this._packet, 0, this._packet.length, 22081, address, function (err) {
 
     // handle error
     if (err) {
