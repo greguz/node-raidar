@@ -188,7 +188,7 @@ Raidar.prototype._onSocketMessage = function (msg) {
  *
  * @param {Object} [options]
  * @param {String} [options.host]       request target devices, default '255.255.255.255'
- * @param {Number} [options.timeout]    request timeout, default 10 seconds
+ * @param {Number} [options.timeout]    request idle timeout, default 3 seconds
  * @param {Function} [callback]
  * @return {Raidar}
  */
@@ -219,6 +219,9 @@ Raidar.prototype.request = function (options, callback) {
   // ensure callback
   callback = callback || function () { }
 
+  // this instance shortcut
+  var self = this
+
   // founded devices
   var devices = []
 
@@ -228,13 +231,35 @@ Raidar.prototype.request = function (options, callback) {
     // just push device instance
     devices.push(device)
 
+    // exec throttling
+    throttle()
+
   }
 
-  // this instance shortcut
-  var self = this
+  // started timeot id
+  var timeout
 
-  // request timeout (default 10 seconds)
-  var timeout = options.timeout || 10000
+  // timeout throttling
+  var throttle = function () {
+
+    // remove previous timeout
+    clearTimeout(timeout)
+
+    // create end request timeout
+    timeout = setTimeout(function () {
+
+      // clear devices listener
+      self.removeListener('device', handler)
+
+      // clean request flag
+      self._request = false
+
+      // all done
+      callback(null, devices)
+
+    }, options.timeout || 3000)
+
+  }
 
   // target host (default broadcast)
   var host = options.host || '255.255.255.255'
@@ -259,19 +284,8 @@ Raidar.prototype.request = function (options, callback) {
     // listen for founded devices
     self.on('device', handler)
 
-    // start a timeout
-    setTimeout(function () {
-
-      // clear devices listener
-      self.removeListener('device', handler)
-
-      // clean request flag
-      self._request = false
-
-      // all done
-      callback(null, devices)
-
-    }, timeout)
+    // start throttling
+    throttle()
 
   })
 
