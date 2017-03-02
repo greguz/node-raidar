@@ -210,7 +210,7 @@ raidar.on('device', function (nas) {
  * execute request
  */
 
-console.log('waiting for response..')
+if (!program.json) console.log('waiting for response..')
 
 raidar.request({
   address: program.address,
