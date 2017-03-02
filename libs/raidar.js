@@ -23,9 +23,6 @@ function Raidar () {
   // magic packet to broadcast
   this._packet = new Buffer('0000073e0000000100000000f8d496c3ffffffff0000001c00000000', 'hex')
 
-  // create TCP socket
-  this.socket = dgram.createSocket('udp4')
-
 }
 
 /**
@@ -42,8 +39,8 @@ util.inherits(Raidar, EventEmitter)
 
 Raidar.prototype.isOpen = function () {
 
-  // return the insternal flag
-  return !!this._open
+  // check socket existance
+  return !!this._socket
 
 }
 
@@ -62,8 +59,8 @@ Raidar.prototype.open = function (callback) {
   // this instance shortcut
   var self = this
 
-  // socket var shortcut
-  var socket = this.socket
+  // create TCP socket
+  var socket = this._socket = dgram.createSocket('udp4')
 
   // start listening
   socket.on('error', this._onSocketError)
@@ -74,9 +71,6 @@ Raidar.prototype.open = function (callback) {
 
     // set communication to broadcast
     socket.setBroadcast(true)
-
-    // set "open" flag
-    self._open = true
 
     // monito "close" event
     socket.once('close', self._onSocketClose)
@@ -110,11 +104,11 @@ Raidar.prototype.close = function (callback) {
   callback = callback || function () { }
 
   // stop listening
-  this.socket.off('error', this._onSocketError)
-  this.socket.off('message', this._onSocketMessage)
+  this._socket.removeListener('error', this._onSocketError)
+  this._socket.removeListener('message', this._onSocketMessage)
 
   // close socket
-  this.socket.close(callback)
+  this._socket.close(callback)
 
   // return this instance
   return this
@@ -128,8 +122,8 @@ Raidar.prototype.close = function (callback) {
 
 Raidar.prototype._onSocketClose = function () {
 
-  // update close flag
-  this._open = false
+  // remove dead socket
+  delete this._socket
 
   // emit event
   this.emit('close')
@@ -265,7 +259,7 @@ Raidar.prototype.request = function (options, callback) {
   var host = options.host || '255.255.255.255'
 
   // send magic packet
-  this.socket.send(this._packet, 0, this._packet.length, 22081, host, function (err) {
+  this._socket.send(this._packet, 0, this._packet.length, 22081, host, function (err) {
 
     // handle error
     if (err) {
