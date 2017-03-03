@@ -111,7 +111,7 @@ Get number of loaded disks.
 
 #### diskInfo({Number} index, {String} [attribute='status']) : {String|Number}
 
-Get info of a particular disk.
+Get info of a particular disk, *index* starts from 1.
 
 | Attribute   | Return type | Description               |
 | ----------- | ----------- | ------------------------- |
@@ -129,7 +129,7 @@ Get number of configured volumes.
 
 #### volumeInfo({Number} index, {String} [attribute='status']) : {String|Number}
 
-Get info of a particular volume.
+Get info of a particular volume, *index* starts from 1.
 
 | Attribute | Return type | Description           |
 | --------- | ----------- | --------------------- |
