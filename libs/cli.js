@@ -12,30 +12,54 @@ var fs = require('fs')
 var chalk = require('chalk')
 
 /**
- * commande config
+ * path parsing for commander
+ *
+ * @param {String} target
+ * @return {String}
  */
 
-program
-  .version(manifest.version)
-  .option('-a, --address <address>', 'perform a request to a particular hostname/IP')
-  .option('-t, --timeout <n>', 'set a request idle timeout, default 3 seconds', parseInt)
-  .option('-f, --fahrenheit', 'display temperature in fahrenheit instead of celsius')
-  .option('-d, --dump [path]', 'dump ReadyNAS messages')
-  .option('-j, --json', 'print JSON format')
-  .option('-F, --fake <path>', 'emulate a fake device from dump')
-  // .option('-v, --verbose', 'enable debug output')
-  .parse(process.argv)
+function parsePath (target) {
+
+  // handle relative paths
+  if (!path.isAbsolute(target)) target = path.join(process.cwd(), target)
+
+  // return resolved path
+  return target
+
+}
 
 /**
- * error handler util
+ * print error to stderr
  *
  * @param {Error} [err]
  */
 
-function handleError (err) {
+function printError (err) {
 
   // print to stderr
   if (err) console.error(err.toString())
+
+}
+
+/**
+ * create an error handler with callback on success
+ *
+ * @param {Function} [success]
+ * @return {Function}
+ */
+
+function handleError (success) {
+
+  // return handler
+  return function (err, result) {
+
+    // print error
+    printError(err)
+
+    // execute success callback
+    if (!err && success) success(result)
+
+  }
 
 }
 
@@ -54,20 +78,11 @@ function dump (message, filename) {
   // set default filename
   filename = filename || (new Date()).getTime().toString()
 
-  // get CLI argument
-  var dir = program.dump
-
-  // set default target dir
-  if (dir === true) dir = process.cwd()
-
-  // handle relative paths
-  if (!path.isAbsolute(dir)) dir = path.join(process.cwd(), dir)
-
   // get target file path
-  var file = path.join(dir, filename) + '.readynas'
+  var file = path.join(program.dump, filename) + '.readynas'
 
   // write file
-  fs.writeFile(file, message, handleError)
+  fs.writeFile(file, message, printError)
 
 }
 
@@ -91,6 +106,9 @@ function statusIcon (status) {
     case 'dead':
       return chalk.bold.red('x')
 
+    case 'not_present':
+      return chalk.gray('x')
+
     default:
       return chalk.bold.blue('?')
 
@@ -99,17 +117,35 @@ function statusIcon (status) {
 }
 
 /**
+ * commande config
+ */
+
+program
+  .version(manifest.version)
+  .option('-a, --address <address>', 'perform a request to a particular hostname/IP')
+  .option('-t, --timeout <n>', 'set a request idle timeout, default 3 seconds', parseInt)
+  .option('-f, --fahrenheit', 'display temperature in fahrenheit instead of celsius')
+  .option('-d, --dump [path]', 'dump ReadyNAS messages', parsePath)
+  .option('-j, --json', 'print JSON format')
+  .option('-F, --fake <path>', 'emulate a fake device from dump', parsePath)
+  // .option('-v, --verbose', 'enable debug output')
+  .parse(process.argv)
+
+// handle optional value
+if (program.dump === true) program.dump = parsePath('.')
+
+/**
  * set listeners
  */
 
 // generic errors
-raidar.on('error', handleError)
+raidar.on('error', printError)
 
 // parse failed devices
 raidar.on('fail', function (err, message) {
 
   // log error
-  handleError(err)
+  printError(err)
 
   // execute dump
   dump(message)
@@ -125,6 +161,7 @@ raidar.on('device', function (nas) {
   // handle JSON output
   if (program.json) return console.log(JSON.stringify(nas, null, 2))
 
+  // resulting log
   var str = '\n'
 
   str += nas.getEntityAttribute('model', 'descr') + ' - ' + nas.serial() + '\n'
@@ -138,14 +175,11 @@ raidar.on('device', function (nas) {
   for (var d = 1; d <= nas.diskCount(); d++) {
 
     str += '  ' + statusIcon(nas.diskInfo(d, 'status'))
-
     str += chalk.grey(' ' + nas.diskInfo(d, 'model') + ' - ')
 
     var temp = nas.diskInfo(d, 'celsius')
 
-    var label = temp + '°C'
-
-    if (program.fahrenheit) label = nas.diskInfo(d, 'fahrenheit') + '°F'
+    var label = program.fahrenheit ? (nas.diskInfo(d, 'fahrenheit') + '°F') : (temp + '°C')
 
     if (temp < 25) {
 
@@ -207,38 +241,14 @@ raidar.on('device', function (nas) {
 })
 
 /**
- * handle fake request
+ * start program
  */
 
-// detect "fake" argument
-if (program.fake) {
-
-  // get target file
-  var file = program.fake
-
-  // resolve relative paths
-  if (!path.isAbsolute(file)) file = path.join(process.cwd(), file)
-
-  // read data from file
-  fs.readFile(file, function (err, data) {
-
-    // print error
-    handleError(err)
-
-    // fake the message
-    if (!err) raidar._onSocketMessage(data)
-
-  })
-
-}
-
-/**
- * execute request
- */
-
+// first message
 if (!program.json) console.log('waiting for response..')
 
-raidar.request({
-  address: program.address,
-  timeout: program.timeout
-}, process.exit)
+// make fake response
+if (program.fake) fs.readFile(program.fake, handleError(raidar._onSocketMessage))
+
+// execute network request
+raidar.request(program, process.exit)
