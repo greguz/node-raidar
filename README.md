@@ -131,14 +131,14 @@ Get number of configured volumes.
 
 Get info of a particular volume.
 
-| Attribute | Return type | Description               |
-| --------- | ----------- | ------------------------- |
-| status    | {String}    | 'ok', 'warn', 'dead' or ? |
-| level     | {String}    | RAID level                |
-| message   | {String}    | Status description        |
-| size      | {Number}    | Volume size in bytes      |
-| used      | {Number}    | Used space in bytes       |
-| free      | {Number}    | Free space in bytes       |
+| Attribute | Return type | Description           |
+| --------- | ----------- | --------------------- |
+| status    | {String}    | 'ok', 'warn' or ?     |
+| level     | {String}    | RAID level            |
+| message   | {String}    | Status description    |
+| size      | {Number}    | Volume size in bytes  |
+| used      | {Number}    | Used space in bytes   |
+| free      | {Number}    | Free space in bytes   |
 
 ### Other APIs
 
