@@ -16,7 +16,6 @@ var chalk = require('chalk')
  */
 
 program
-  .command('raidar')
   .version(manifest.version)
   .option('-a, --address <address>', 'perform a request to a particular hostname/IP')
   .option('-t, --timeout <n>', 'set a request idle timeout, default 3 seconds', parseInt)
