@@ -40,7 +40,7 @@
     "readynas"
   ],
   "engines": {
-    "node": ">=v0.11.2"
+    "node": ">=v0.12"
   },
   "license": "MIT"
 }
