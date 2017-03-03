@@ -1,6 +1,6 @@
 {
   "name": "raidar",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "NetGear RAIDar Node.js implementation",
   "main": "./index.js",
   "scripts": {
