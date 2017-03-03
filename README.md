@@ -244,6 +244,7 @@ Options:
   -f, --fahrenheit         display temperature in fahrenheit instead of celsius
   -d, --dump [path]        dump ReadyNAS messages
   -j, --json               print JSON format
+  -F, --fake <path>        emulate a fake device from dump
 ```
 
 ### Output
