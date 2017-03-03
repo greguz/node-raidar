@@ -1,6 +1,6 @@
 {
   "name": "raidar",
-  "version": "0.7.3",
+  "version": "0.8.0",
   "description": "NetGear RAIDar Node.js implementation",
   "main": "./index.js",
   "scripts": {
@@ -39,5 +39,8 @@
     "raidar",
     "readynas"
   ],
+  "engines": {
+    "node": ">=v0.11.2"
+  },
   "license": "MIT"
 }

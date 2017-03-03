@@ -22,6 +22,7 @@ program
   .option('-f, --fahrenheit', 'display temperature in fahrenheit instead of celsius')
   .option('-d, --dump [path]', 'dump ReadyNAS messages')
   .option('-j, --json', 'print JSON format')
+  .option('-F, --fake <path>', 'emulate a fake device from dump')
   // .option('-v, --verbose', 'enable debug output')
   .parse(process.argv)
 
@@ -60,7 +61,7 @@ function dump (message, filename) {
   if (dir === true) dir = process.cwd()
 
   // handle relative paths
-  if (dir[0] !== '/') dir = path.join(process.cwd(), dir)
+  if (!path.isAbsolute(dir)) dir = path.join(process.cwd(), dir)
 
   // get target file path
   var file = path.join(dir, filename) + '.readynas'
@@ -204,6 +205,32 @@ raidar.on('device', function (nas) {
   console.log(str)
 
 })
+
+/**
+ * handle fake request
+ */
+
+// detect "fake" argument
+if (program.fake) {
+
+  // get target file
+  var file = program.fake
+
+  // resolve relative paths
+  if (!path.isAbsolute(file)) file = path.join(process.cwd(), file)
+
+  // read data from file
+  fs.readFile(file, function (err, data) {
+
+    // print error
+    handleError(err)
+
+    // fake the message
+    if (!err) raidar._onSocketMessage(data)
+
+  })
+
+}
 
 /**
  * execute request
