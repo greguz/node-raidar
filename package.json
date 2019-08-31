@@ -44,5 +44,9 @@
   "engines": {
     "node": ">=v0.12"
   },
+  "files": [
+    "libs",
+    "index.js"
+  ],
   "license": "MIT"
 }
