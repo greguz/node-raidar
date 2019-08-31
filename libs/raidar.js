@@ -14,15 +14,12 @@ var ReadyNAS = require('./readynas')
  */
 
 function Raidar () {
-
-  // force function context
   this._onSocketClose = this._onSocketClose.bind(this)
   this._onSocketError = this._onSocketError.bind(this)
   this._onSocketMessage = this._onSocketMessage.bind(this)
 
-  // magic packet to broadcast
+  // eslint-disable-next-line
   this._packet = new Buffer('0000073e0000000100000000f8d496c3ffffffff0000001c00000000', 'hex')
-
 }
 
 /**
@@ -38,10 +35,8 @@ util.inherits(Raidar, EventEmitter)
  */
 
 Raidar.prototype.isOpen = function () {
-
   // check socket existance
   return !!this._socket
-
 }
 
 /**
@@ -52,7 +47,6 @@ Raidar.prototype.isOpen = function () {
  */
 
 Raidar.prototype.open = function (callback) {
-
   // ensure callback
   callback = callback || function () { }
 
@@ -68,7 +62,6 @@ Raidar.prototype.open = function (callback) {
 
   // open socket
   socket.bind(57877, function () {
-
     // set communication to broadcast
     socket.setBroadcast(true)
 
@@ -80,12 +73,10 @@ Raidar.prototype.open = function (callback) {
 
     // execute callback
     callback()
-
   })
 
   // return this instance
   return this
-
 }
 
 /**
@@ -96,7 +87,6 @@ Raidar.prototype.open = function (callback) {
  */
 
 Raidar.prototype.close = function (callback) {
-
   // ensure status
   if (!this.isOpen()) throw new Error('Socket is not open')
 
@@ -112,7 +102,6 @@ Raidar.prototype.close = function (callback) {
 
   // return this instance
   return this
-
 }
 
 /**
@@ -121,13 +110,11 @@ Raidar.prototype.close = function (callback) {
  */
 
 Raidar.prototype._onSocketClose = function () {
-
   // remove dead socket
   delete this._socket
 
   // emit event
   this.emit('close')
-
 }
 
 /**
@@ -138,10 +125,8 @@ Raidar.prototype._onSocketClose = function () {
  */
 
 Raidar.prototype._onSocketError = function (err) {
-
   // notify error
   this.emit('error', err)
-
 }
 
 /**
@@ -152,13 +137,11 @@ Raidar.prototype._onSocketError = function (err) {
  */
 
 Raidar.prototype._onSocketMessage = function (msg) {
-
   // notify Raidar message
   this.emit('message', msg)
 
   // try to parse
   try {
-
     // instance a ReadyNAS
     var device = new ReadyNAS(msg)
 
@@ -167,14 +150,10 @@ Raidar.prototype._onSocketMessage = function (msg) {
     this.emit(device.ip(), device)
     this.emit(device.mac(), device)
     this.emit(device.hostname(), device)
-
   } catch (err) {
-
     // handle paring error
     this.emit('fail', err, msg)
-
   }
-
 }
 
 /**
@@ -182,15 +161,12 @@ Raidar.prototype._onSocketMessage = function (msg) {
  */
 
 function parseRequestArguments () {
-
   var result = {}
 
   for (var i = 0; i < arguments.length; i++) {
-
     var arg = arguments[i]
 
     switch (typeof arg) {
-
       case 'object':
         result = arg
         break
@@ -206,13 +182,10 @@ function parseRequestArguments () {
       case 'string':
         result.address = arg
         break
-
     }
-
   }
 
   return result
-
 }
 
 /**
@@ -226,7 +199,6 @@ function parseRequestArguments () {
  */
 
 Raidar.prototype.request = function (options, callback) {
-
   // ensure no previous requests
   if (this._request) throw new Error('A previous request is running')
 
@@ -250,13 +222,11 @@ Raidar.prototype.request = function (options, callback) {
 
   // davice collector handler
   var handler = function (device) {
-
     // just push device instance
     devices.push(device)
 
     // exec throttling
     throttle()
-
   }
 
   // started timeot id
@@ -264,13 +234,11 @@ Raidar.prototype.request = function (options, callback) {
 
   // timeout throttling
   var throttle = function () {
-
     // remove previous timeout
     clearTimeout(timeout)
 
     // create end request timeout
     timeout = setTimeout(function () {
-
       // clear devices listener
       self.removeListener('device', handler)
 
@@ -279,9 +247,7 @@ Raidar.prototype.request = function (options, callback) {
 
       // all done
       callback(null, devices)
-
     }, options.timeout || 3000)
-
   }
 
   // target address (default broadcast)
@@ -289,10 +255,8 @@ Raidar.prototype.request = function (options, callback) {
 
   // send magic packet
   this._socket.send(this._packet, 0, this._packet.length, 22081, address, function (err) {
-
     // handle error
     if (err) {
-
       // clean request flag
       self._request = false
 
@@ -301,7 +265,6 @@ Raidar.prototype.request = function (options, callback) {
 
       // execute callback
       return callback(err)
-
     }
 
     // listen for founded devices
@@ -309,12 +272,10 @@ Raidar.prototype.request = function (options, callback) {
 
     // start throttling
     throttle()
-
   })
 
   // return this instance
   return this
-
 }
 
 /**

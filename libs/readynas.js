@@ -14,7 +14,6 @@ var deprecate = require('deprecate')
  */
 
 function _eachRegExp (regexp, text, callback) {
-
   // ensure regexp type
   if (typeof regexp === 'string') regexp = new RegExp(regexp, 'g')
 
@@ -23,15 +22,12 @@ function _eachRegExp (regexp, text, callback) {
 
   // each while regex match
   while (result) {
-
     // execute callback
     callback(result)
 
     // get next match
     result = regexp.exec(text)
-
   }
-
 }
 
 /**
@@ -43,24 +39,20 @@ function _eachRegExp (regexp, text, callback) {
  */
 
 function _parseEntity (data, index) {
-
   // resulting attributes
   var attributes = { _index: index ? parseInt(index, 10) : 0 }
 
   // split by "::"
   data.split('::').forEach(function (attribute) {
-
     // split attribute name and value
     attribute = attribute.split('=')
 
     // save its value
-    attributes[ attribute[0] ] = attribute[1]
-
+    attributes[attribute[0]] = attribute[1]
   })
 
   // return attributes
   return attributes
-
 }
 
 /**
@@ -72,13 +64,11 @@ function _parseEntity (data, index) {
  */
 
 function ReadyNAS (message) {
-
   // cast buffer to string
   if (message instanceof Buffer) message = message.toString('ascii')
 
   // save message internally
   this.message = message
-
 }
 
 /**
@@ -88,10 +78,8 @@ function ReadyNAS (message) {
  */
 
 ReadyNAS.prototype.mac = function () {
-
   // probably....
   return this.message.substr(28, 17)
-
 }
 
 /**
@@ -101,10 +89,8 @@ ReadyNAS.prototype.mac = function () {
  */
 
 ReadyNAS.prototype.hostname = function () {
-
   // probably....
   return /\t(\S+)/.exec(this.message)[1]
-
 }
 
 /**
@@ -114,10 +100,8 @@ ReadyNAS.prototype.hostname = function () {
  */
 
 ReadyNAS.prototype.ip = function () {
-
   // probably....
   return /\t(\d+.\d+.\d+.\d+)\t/.exec(this.message)[1]
-
 }
 
 /**
@@ -127,24 +111,20 @@ ReadyNAS.prototype.ip = function () {
  */
 
 ReadyNAS.prototype.getEntities = function () {
-
   // resulting array
   var entities = []
 
   // each all matches
   _eachRegExp(/(\w+)!!\d+!![^\n\t]*/g, this.message, function (entity) {
-
     // get entity name
     var name = entity[1]
 
     // save new entities
     if (entities.indexOf(name) === -1) entities.push(name)
-
   })
 
   // return results
   return entities
-
 }
 
 /**
@@ -156,7 +136,6 @@ ReadyNAS.prototype.getEntities = function () {
  */
 
 ReadyNAS.prototype.getEntity = function (entity, index) {
-
   // set default index
   if (typeof index !== 'number') index = 0
 
@@ -168,7 +147,6 @@ ReadyNAS.prototype.getEntity = function (entity, index) {
 
   // return parsed entity data
   return _parseEntity(regex.exec(this.message)[1], index)
-
 }
 
 /**
@@ -181,24 +159,20 @@ ReadyNAS.prototype.getEntity = function (entity, index) {
  */
 
 ReadyNAS.prototype.getEntityAttribute = function (field, index, attribute) {
-
   // handle optional index signature
   if (typeof index === 'string') {
-
     // get attribute
     attribute = index
 
     // remove index
     index = undefined
-
   }
 
   // parse entity data
   var data = this.getEntity(field, index)
 
   // return single attribute
-  return data[ attribute ]
-
+  return data[attribute]
 }
 
 /**
@@ -208,40 +182,32 @@ ReadyNAS.prototype.getEntityAttribute = function (field, index, attribute) {
  */
 
 ReadyNAS.prototype.toJSON = function () {
-
   // resulting array
   var result = {}
 
   // each all entities
   _eachRegExp(/(\w+)!!(\d+)!!([^\n\t]*)/g, this.message, function (entity) {
-
     // parse single entity data
     var attributes = _parseEntity(entity[3], entity[2])
 
     // save entity attributes
     if (attributes._index <= 0) { // handle single entry entities
-
       // check for previous data
-      if (result[ entity[1] ]) throw new Error('nope')
+      if (result[entity[1]]) throw new Error('nope')
 
       // save directly as object
-      result[ entity[1] ] = attributes
-
+      result[entity[1]] = attributes
     } else { // handle multiple entries entities
-
       // ensure array
-      result[ entity[1] ] = result[ entity[1] ] || []
+      result[entity[1]] = result[entity[1]] || []
 
       // push new entry
-      result[ entity[1] ].push(attributes)
-
+      result[entity[1]].push(attributes)
     }
-
   })
 
   // return serialized object
   return result
-
 }
 
 /**
@@ -258,13 +224,11 @@ ReadyNAS.prototype.toJSON = function () {
  */
 
 ReadyNAS.prototype.diskInfo = function (index, attribute) {
-
   // parse entity data
   var data = this.getEntity('disk', index)
 
   // detect request
   switch (attribute) {
-
     // extract and parse channel from description
     case 'channel':
       return parseInt(/Channel (\d+)/.exec(data.descr)[1], 10)
@@ -278,15 +242,13 @@ ReadyNAS.prototype.diskInfo = function (index, attribute) {
     case 'temperature':
     case 'celsius':
     case 'fahrenheit':
-      return parseInt(/(\d+)C\/(\d+)F/.exec(data.descr)[ attribute === 'fahrenheit' ? 2 : 1 ], 10)
+      return parseInt(/(\d+)C\/(\d+)F/.exec(data.descr)[attribute === 'fahrenheit' ? 2 : 1], 10)
 
     // just return entity attribute
     default:
     case 'status':
       return data.status
-
   }
-
 }
 
 /**
@@ -296,10 +258,8 @@ ReadyNAS.prototype.diskInfo = function (index, attribute) {
  */
 
 ReadyNAS.prototype.diskCount = function () {
-
   // return number of disk entities
   return this.message.match(/disk!!\d+!!/g).length
-
 }
 
 /**
@@ -309,10 +269,8 @@ ReadyNAS.prototype.diskCount = function () {
  */
 
 ReadyNAS.prototype.serial = function () {
-
   // get single attribute from  model entity
   return this.getEntityAttribute('model', 'sn')
-
 }
 
 /**
@@ -322,10 +280,8 @@ ReadyNAS.prototype.serial = function () {
  */
 
 ReadyNAS.prototype.version = function () {
-
   // get single attribute from  model entity
   return this.getEntityAttribute('model', 'fw')
-
 }
 
 /**
@@ -337,11 +293,9 @@ ReadyNAS.prototype.version = function () {
  */
 
 ReadyNAS.prototype.volumeInfo = function (index, attribute) {
-
   var data = this.getEntity('volume', index)
 
   switch (attribute) {
-
     // extract RAID level
     case 'level':
       return /RAID Level (.*),/.exec(data.descr)[1]
@@ -366,9 +320,7 @@ ReadyNAS.prototype.volumeInfo = function (index, attribute) {
     default:
     case 'status':
       return data.status
-
   }
-
 }
 
 /**
@@ -378,10 +330,8 @@ ReadyNAS.prototype.volumeInfo = function (index, attribute) {
  */
 
 ReadyNAS.prototype.volumeCount = function () {
-
   // return number of volume entities
   return this.message.match(/volume!!\d+!!/g).length
-
 }
 
 /**
@@ -389,13 +339,11 @@ ReadyNAS.prototype.volumeCount = function () {
  */
 
 ReadyNAS.prototype.info = function () {
-
   // print deprecation warning
   deprecate('ReadyNAS#info() is deprecated')
 
   // WTF ?
   return this.getEntityAttribute('model', 'descr')
-
 }
 
 /**
@@ -403,13 +351,11 @@ ReadyNAS.prototype.info = function () {
  */
 
 ReadyNAS.prototype.status = function (entity, index) {
-
   // print deprecation warning
   deprecate('ReadyNAS#status() is deprecated, use ReadyNAS#getEntity() instead')
 
   // alias of #getEntity()
   return this.getEntity(entity, index)
-
 }
 
 /**

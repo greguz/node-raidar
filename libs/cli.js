@@ -19,13 +19,11 @@ var chalk = require('chalk')
  */
 
 function parsePath (target) {
-
   // handle relative paths
   if (!path.isAbsolute(target)) target = path.join(process.cwd(), target)
 
   // return resolved path
   return target
-
 }
 
 /**
@@ -35,10 +33,8 @@ function parsePath (target) {
  */
 
 function printError (err) {
-
   // print to stderr
   if (err) console.error(err.toString())
-
 }
 
 /**
@@ -49,18 +45,14 @@ function printError (err) {
  */
 
 function handleError (success) {
-
   // return handler
   return function (err, result) {
-
     // print error
     printError(err)
 
     // execute success callback
     if (!err && success) success(result)
-
   }
-
 }
 
 /**
@@ -71,7 +63,6 @@ function handleError (success) {
  */
 
 function dump (message, filename) {
-
   // ensure process dump actived
   if (!program.dump) return
 
@@ -83,7 +74,6 @@ function dump (message, filename) {
 
   // write file
   fs.writeFile(file, message, printError)
-
 }
 
 /**
@@ -94,9 +84,7 @@ function dump (message, filename) {
  */
 
 function statusIcon (status) {
-
   switch (status) {
-
     case 'ok':
       return chalk.green('✓')
 
@@ -111,9 +99,7 @@ function statusIcon (status) {
 
     default:
       return chalk.bold.blue('?')
-
   }
-
 }
 
 /**
@@ -143,18 +129,15 @@ raidar.on('error', printError)
 
 // parse failed devices
 raidar.on('fail', function (err, message) {
-
   // log error
   printError(err)
 
   // execute dump
   dump(message)
-
 })
 
 // successful devices
 raidar.on('device', function (nas) {
-
   // dump message with IP as filename
   dump(nas.message, nas.ip())
 
@@ -173,7 +156,6 @@ raidar.on('device', function (nas) {
   str += '  Disks\n'
 
   for (var d = 1; d <= nas.diskCount(); d++) {
-
     str += '  ' + statusIcon(nas.diskInfo(d, 'status'))
     str += chalk.grey(' ' + nas.diskInfo(d, 'model') + ' - ')
 
@@ -182,62 +164,42 @@ raidar.on('device', function (nas) {
     var label = program.fahrenheit ? (nas.diskInfo(d, 'fahrenheit') + '°F') : (temp + '°C')
 
     if (temp < 25) {
-
       str += chalk.bgBlue(label)
-
     } else if (temp < 41) {
-
       str += chalk.grey(label)
-
     } else if (temp < 51) {
-
       str += chalk.bgYellow(label)
-
     } else {
-
       str += chalk.bgRed(label)
-
     }
 
     str += '\n'
-
   }
 
   str += '  Volumes\n'
 
   for (var v = 1; v <= nas.volumeCount(); v++) {
-
     str += '  ' + statusIcon(nas.volumeInfo(v, 'status'))
     str += chalk.grey(' RAID lv.' + nas.volumeInfo(v, 'level') + ' - ')
 
     var usage = parseInt(nas.volumeInfo(v, 'used') / nas.volumeInfo(v, 'size') * 100)
 
     if (usage < 50) {
-
       str += chalk.grey(usage + '%')
-
     } else if (usage < 75) {
-
       str += chalk.bgBlue(usage + '%')
-
     } else if (usage < 90) {
-
       str += chalk.bgYellow(usage + '%')
-
     } else {
-
       str += chalk.bgRed(usage + '%')
-
     }
 
     str += chalk.grey(' used\n')
     str += '    ' + chalk.grey(nas.volumeInfo(v, 'message')) + '\n'
-
   }
 
   // print to stdout
   console.log(str)
-
 })
 
 /**
