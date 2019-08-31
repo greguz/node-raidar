@@ -1,6 +1,8 @@
 # node-raidar: a Node.js NetGear RAIDar library
 
-`node-raidar` is a simple to use NetGear RAIDar implementation for Node.js.
+[![npm version](https://badge.fury.io/js/raidar.svg)](https://badge.fury.io/js/raidar) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+
+`raidar` is a simple to use NetGear RAIDar implementation for Node.js.
 
 
 
@@ -286,7 +288,7 @@ npm run test
 
 ## License
 
-Copyright 2017 Giacomo Gregoletto
+Copyright 2019 Giacomo Gregoletto
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
