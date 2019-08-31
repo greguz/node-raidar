@@ -18,18 +18,20 @@
     "url": "https://github.com/greguz/node-raidar/issues"
   },
   "dependencies": {
-    "bytes": "^2.4.0",
-    "chalk": "^1.0.0",
-    "commander": "^2.9.0",
-    "deprecate": "^1.0.0"
+    "bytes": "^3.1.0",
+    "chalk": "^2.4.2",
+    "commander": "^3.0.1",
+    "deprecate": "^1.1.1"
   },
   "devDependencies": {
-    "chai": "^3.5.0",
-    "eslint": "^3.16.1",
-    "eslint-config-standard": "^7.0.0",
-    "eslint-plugin-promise": "^3.4.2",
-    "eslint-plugin-standard": "^2.0.1",
-    "mocha": "^3.2.0"
+    "chai": "^4.2.0",
+    "eslint": "^6.3.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-node": "^9.2.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "mocha": "^6.2.0"
   },
   "bin": {
     "raidar": "./libs/cli.js"
